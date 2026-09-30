@@ -1,9 +1,11 @@
 import XCTest
 
 final class FlowAppiOSUITests: XCTestCase {
-    func testLaunch() throws {
+    func testLaunchShowsBottomBarTabs() throws {
         let app = XCUIApplication()
         app.launch()
-        XCTAssertTrue(app.staticTexts["Flow"].waitForExistence(timeout: 2))
+        for tab in ["Home", "Tasks", "Focus", "Stats"] {
+            XCTAssertTrue(app.buttons[tab].waitForExistence(timeout: 5), "Missing tab \(tab)")
+        }
     }
 }
