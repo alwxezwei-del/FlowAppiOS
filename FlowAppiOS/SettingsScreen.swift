@@ -31,8 +31,8 @@ struct SettingsScreen: View {
         .navigationBarHidden(true)
         .alert("Reset data?", isPresented: $resetDialog) {
             Button("Cancel", role: .cancel) {}
-            Button("Reset", role: .destructive) { store.resetSampleData() }
-        } message: { Text("This restores the sample FlowApp dataset.") }
+            Button("Reset", role: .destructive) { store.resetAllData() }
+        } message: { Text("This deletes all local FlowApp data on this simulator.") }
     }
 
     private var timerSettings: some View {
@@ -65,7 +65,7 @@ struct SettingsScreen: View {
         VStack(spacing: 4) {
             ButtonRow(title: "Export backup", subtitle: "Coming from Android concept: local JSON backup", destructive: false) {}
             ButtonRow(title: "Import backup", subtitle: "Ready for future file importer", destructive: false) {}
-            ButtonRow(title: "Reset sample data", subtitle: "Restore demo tasks, habits and sessions", destructive: true) { resetDialog = true }
+            ButtonRow(title: "Reset all data", subtitle: "Delete local tasks, habits and focus sessions", destructive: true) { resetDialog = true }
         }
     }
 }

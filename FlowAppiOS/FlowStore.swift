@@ -12,11 +12,13 @@ final class FlowStore: ObservableObject {
 
     private let storageURL: URL
     private var didLoad = false
+    private var shouldPersistAfterLoad = false
 
     init(seedSamples: Bool) {
         storageURL = URL.documentsDirectory.appending(path: "flowapp-ios-state.json")
         load(seedSamples: seedSamples)
         didLoad = true
+        if shouldPersistAfterLoad { persist() }
     }
 
     var todayTasks: [FlowTask] {
@@ -77,18 +79,41 @@ final class FlowStore: ObservableObject {
         }
     }
 
-    func resetSampleData() {
-        seed()
+    func resetAllData() {
+        tasks = []
+        habits = []
+        sessions = []
+        categories = defaultCategories
+        settings = AppSettings()
+    }
+
+    private var defaultCategories: [FlowCategory] {
+        [
+            FlowCategory(name: "Work", color: .purple, icon: "briefcase.fill"),
+            FlowCategory(name: "Learning", color: .blue, icon: "book.fill"),
+            FlowCategory(name: "Health", color: .green, icon: "figure.run")
+        ]
     }
 
     private func load(seedSamples: Bool) {
         guard let data = try? Data(contentsOf: storageURL), let snapshot = try? JSONDecoder().decode(Snapshot.self, from: data) else {
-            if seedSamples { seed() }
+            categories = defaultCategories
             return
         }
+
+        if isLegacyBundledDemo(snapshot) {
+            tasks = []
+            habits = []
+            sessions = []
+            categories = defaultCategories
+            settings = AppSettings()
+            shouldPersistAfterLoad = true
+            return
+        }
+
         tasks = snapshot.tasks
         habits = snapshot.habits
-        categories = snapshot.categories
+        categories = snapshot.categories.isEmpty ? defaultCategories : snapshot.categories
         sessions = snapshot.sessions
         settings = snapshot.settings
     }
@@ -100,30 +125,17 @@ final class FlowStore: ObservableObject {
         try? data.write(to: storageURL, options: .atomic)
     }
 
-    private func seed() {
-        let work = FlowCategory(name: "Work", color: .purple, icon: "briefcase.fill")
-        let learning = FlowCategory(name: "Learning", color: .blue, icon: "book.fill")
-        let health = FlowCategory(name: "Health", color: .green, icon: "figure.run")
-        categories = [work, learning, health]
-        let now = Date()
-        tasks = [
-            FlowTask(title: "Design onboarding flow", notes: "Polish empty states and motion", categoryID: work.id, estimateMinutes: 60, focusedMinutes: 25, dueDate: now, priority: .high, status: .active, createdAt: now.addingDays(-2)),
-            FlowTask(title: "Review pull requests", notes: "Check API layer changes", categoryID: work.id, estimateMinutes: 45, focusedMinutes: 0, dueDate: now, priority: .normal, status: .active, createdAt: now.addingDays(-1)),
-            FlowTask(title: "Read Swift concurrency notes", notes: "Actors and cancellation", categoryID: learning.id, estimateMinutes: 30, focusedMinutes: 18, dueDate: now.addingDays(1), priority: .normal, status: .active, createdAt: now.addingDays(-3)),
-            FlowTask(title: "Morning mobility", notes: "Light stretch", categoryID: health.id, estimateMinutes: 15, focusedMinutes: 15, dueDate: now, priority: .low, status: .completed, createdAt: now.addingDays(-1), completedAt: now)
-        ]
-        habits = [
-            FlowHabit(name: "Code", icon: "chevron.left.forwardslash.chevron.right", color: .pink, targetPerDay: 1, note: "Daily practice", completedDates: [now.flowDayKey], createdAt: now.addingDays(-20)),
-            FlowHabit(name: "Read", icon: "book.closed.fill", color: .blue, targetPerDay: 1, note: "At least 20 minutes", completedDates: [], createdAt: now.addingDays(-15)),
-            FlowHabit(name: "Workout", icon: "figure.strengthtraining.traditional", color: .green, targetPerDay: 1, note: "Move every day", completedDates: [now.addingDays(-1).flowDayKey], createdAt: now.addingDays(-12))
-        ]
-        sessions = [
-            FocusSession(taskID: tasks.first?.id, plannedMinutes: 25, actualMinutes: 25, startedAt: now.addingTimeInterval(-7200), endedAt: now.addingTimeInterval(-5700), completed: true),
-            FocusSession(taskID: tasks.dropFirst().first?.id, plannedMinutes: 25, actualMinutes: 18, startedAt: now.addingDays(-1), endedAt: now.addingDays(-1).addingTimeInterval(1080), completed: false),
-            FocusSession(taskID: tasks.first?.id, plannedMinutes: 45, actualMinutes: 40, startedAt: now.addingDays(-2), endedAt: now.addingDays(-2).addingTimeInterval(2400), completed: true)
-        ]
-        settings = AppSettings()
+    private func isLegacyBundledDemo(_ snapshot: Snapshot) -> Bool {
+        let demoTaskTitles = Set([
+            "Design onboarding flow",
+            "Review pull requests",
+            "Read Swift concurrency notes",
+            "Morning mobility"
+        ])
+        let demoHabitNames = Set(["Code", "Read", "Workout"])
+        return Set(snapshot.tasks.map(\.title)) == demoTaskTitles && Set(snapshot.habits.map(\.name)) == demoHabitNames
     }
+
 }
 
 private struct Snapshot: Codable {

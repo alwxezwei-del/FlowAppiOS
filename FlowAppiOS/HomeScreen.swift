@@ -11,7 +11,7 @@ struct HomeScreen: View {
             LazyVStack(spacing: 16) {
                 header
                 WeekStrip(selectedDate: $store.selectedDate)
-                FocusSummaryCard(minutes: store.focusTodayMinutes, completed: store.completedTodayCount, total: max(store.todayTasks.count + store.completedTodayCount, 1))
+                FocusSummaryCard(minutes: store.focusTodayMinutes, completed: store.completedTodayCount, total: store.todayTasks.count + store.completedTodayCount)
                 tasksSection
                 habitsSection
             }
@@ -62,9 +62,13 @@ struct HomeScreen: View {
         VStack(spacing: 10) {
             SectionHeader(title: "Habits", trailing: "Manage") { selectedTab = .tasks }
             FlowCard(padding: 12) {
-                VStack(spacing: 0) {
-                    ForEach(store.habits) { habit in
-                        HabitRowView(habit: habit, date: store.selectedDate) { store.toggleHabit(habit, on: store.selectedDate, completed: $0) }
+                if store.habits.isEmpty {
+                    EmptyState(icon: "repeat.circle", title: "No habits yet", subtitle: "Add your first habit when habit management is enabled.")
+                } else {
+                    VStack(spacing: 0) {
+                        ForEach(store.habits) { habit in
+                            HabitRowView(habit: habit, date: store.selectedDate) { store.toggleHabit(habit, on: store.selectedDate, completed: $0) }
+                        }
                     }
                 }
             }

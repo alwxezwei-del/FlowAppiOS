@@ -2,9 +2,10 @@ import Testing
 @testable import FlowAppiOS
 
 struct FlowAppiOSTests {
-    @Test func sampleDataLoads() async throws {
-        let store = FlowStore(seedSamples: true)
-        #expect(store.tasks.isEmpty == false)
-        #expect(store.habits.isEmpty == false)
+    @Test func startsWithoutUserContent() async throws {
+        let store = FlowStore(seedSamples: false)
+        #expect(store.tasks.isEmpty)
+        #expect(store.habits.isEmpty)
+        #expect(store.categories.isEmpty == false)
     }
 }
