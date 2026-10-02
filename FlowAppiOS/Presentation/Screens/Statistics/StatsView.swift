@@ -85,10 +85,11 @@ struct StatsView: View {
             let byMonth = Dictionary(grouping: days, by: \.date.month)
             return byMonth.keys.sorted().map { month in
                 let seconds = byMonth[month]!.reduce(0) { $0 + $1.seconds }
+                let firstDay = LocalDate(year: today.year, month: month, day: 1)
                 return Bar(
-                    label: String(monthNames[month - 1].prefix(1)),
+                    label: firstDay.monthInitial,
                     value: Double(seconds),
-                    accessibilityText: "\(monthNames[month - 1]), \(seconds.durationText)",
+                    accessibilityText: "\(firstDay.monthText), \(seconds.durationText)",
                     isHighlighted: month == today.month
                 )
             }

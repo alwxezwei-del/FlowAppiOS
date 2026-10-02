@@ -3,25 +3,11 @@ import Foundation
 /// Day of week. Raw value matches the Android ordinal (Monday = 0), which is what backups store.
 enum DayOfWeek: Int, CaseIterable, Codable {
     case monday, tuesday, wednesday, thursday, friday, saturday, sunday
-
-    var name: String {
-        switch self {
-        case .monday: "Monday"
-        case .tuesday: "Tuesday"
-        case .wednesday: "Wednesday"
-        case .thursday: "Thursday"
-        case .friday: "Friday"
-        case .saturday: "Saturday"
-        case .sunday: "Sunday"
-        }
-    }
-
-    var shortName: String { String(name.prefix(3)) }
 }
 
 /// A calendar date without time or time zone, stored as days since 1970-01-01.
 /// Encodes as that number, same as `LocalDate.toEpochDays()` on Android.
-struct LocalDate: Hashable, Comparable, Codable, CustomStringConvertible {
+struct LocalDate: Hashable, Comparable, Codable {
     let epochDay: Int
 
     init(epochDay: Int) {
@@ -99,8 +85,6 @@ struct LocalDate: Hashable, Comparable, Codable, CustomStringConvertible {
     }
 
     static func < (lhs: LocalDate, rhs: LocalDate) -> Bool { lhs.epochDay < rhs.epochDay }
-
-    var description: String { String(format: "%04d-%02d-%02d", year, month, day) }
 }
 
 struct DateRange: Hashable {

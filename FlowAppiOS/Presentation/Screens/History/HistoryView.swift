@@ -42,16 +42,14 @@ struct HistoryView: View {
 private struct EventRow: View {
     let event: HistoryEvent
 
-    @Environment(\.timeSource) private var time
     @Environment(\.colors) private var colors
 
     var body: some View {
-        let parts = time.calendar.dateComponents([.hour, .minute], from: event.date)
         HStack(spacing: 12) {
-            Text(timeText(minuteOfDay: (parts.hour ?? 0) * 60 + (parts.minute ?? 0)))
+            Text(event.date, format: .dateTime.hour().minute())
                 .font(.flowCaption)
                 .foregroundStyle(colors.textTertiary)
-                .frame(width: 52, alignment: .leading)
+                .frame(minWidth: 52, alignment: .leading)
             IconBadge(icon: icon, accent: accent, size: 32)
             VStack(alignment: .leading) {
                 Text(title).font(.flowBody2).foregroundStyle(colors.textMain)
